@@ -19,7 +19,7 @@ body:hover #instructions {
   justify-content: center;
   height: 100%;
   width: 100%;
-  background-color: rgba(20, 20, 20, 0.75);
+  background-color: rgba(0, 0, 0, 0.75);
 }
 
 a:visited {
@@ -49,10 +49,3 @@ a:visited {
   right: 30px;
 }
 
-#youtube,
-#skillshare,
-#youtube-card,
-#skillshare-card {
-  display: none;
-  color: black;
-}

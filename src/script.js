@@ -11,6 +11,8 @@ const originalBoxSize = 3; // Original width and height of a box
 let autopilot;
 let gameEnded;
 let robotPrecision; // Determines how precise the game is on autopilot
+let highScore = 0;
+
 
 const scoreElement = document.getElementById("score");
 const instructionsElement = document.getElementById("instructions");
@@ -20,8 +22,24 @@ init();
 
 // Determines how precise the game is on autopilot
 function setRobotPrecision() {
-  robotPrecision = 1//Math.random() * 1 - 0.5;
+  robotPrecision = 1 + Math.random() * 1 - 0.5;
 }
+
+
+var boxPlacedThump = new Howl({
+  src: ['sounds/box_placed_b.mp3']
+});
+var boxPlacedCrunch = new Howl({
+  src: ['sounds/box_placed_c.mp3']
+});
+var bgMusic = new Howl({
+  src: ['sounds/bg_music.mp3'],
+  volume: 0.6
+});
+var gameOver = new Howl({
+  src: ['sounds/game_over2.mp3'],
+  volume: 0.2
+});
 
 function init() {
   autopilot = true;
@@ -95,6 +113,8 @@ function startGame() {
   stack = [];
   overhangs = [];
 
+  bgMusic.play();
+
   if (instructionsElement) instructionsElement.style.display = "none";
   if (resultsElement) resultsElement.style.display = "none";
   if (scoreElement) scoreElement.innerText = 0;
@@ -140,6 +160,7 @@ function addOverhang(x, z, width, depth) {
   overhangs.push(overhang);
 }
 
+
 function generateBox(x, y, z, width, depth, falls) {
   // ThreeJS
   const geometry = new THREE.BoxGeometry(width, boxHeight, depth);
@@ -159,6 +180,7 @@ function generateBox(x, y, z, width, depth, falls) {
   const body = new CANNON.Body({ mass, shape });
   body.position.set(x, y, z);
   world.addBody(body);
+
 
   return {
     threejs: mesh,
@@ -215,6 +237,11 @@ function eventHandler() {
 function splitBlockAndAddNextOneIfOverlaps() {
   if (gameEnded) return;
 
+  boxPlacedThump.volume(Math.random() + 0.2);
+  boxPlacedCrunch.volume(Math.random());
+  boxPlacedThump.play();
+  boxPlacedCrunch.play();
+
   const topLayer = stack[stack.length - 1];
   const previousLayer = stack[stack.length - 2];
 
@@ -253,6 +280,7 @@ function splitBlockAndAddNextOneIfOverlaps() {
     const nextDirection = direction == "x" ? "z" : "x";
 
     if (scoreElement) scoreElement.innerText = stack.length - 1;
+
     addLayer(nextX, nextZ, newWidth, newDepth, nextDirection);
   } else {
     missedTheSpot();
@@ -271,6 +299,9 @@ function missedTheSpot() {
   );
   world.remove(topLayer.cannonjs);
   scene.remove(topLayer.threejs);
+
+  bgMusic.fade(bgMusic.volume(), 0, 700);
+  gameOver.play();
 
   gameEnded = true;
   if (resultsElement && !autopilot) resultsElement.style.display = "flex";
